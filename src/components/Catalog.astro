@@ -1,0 +1,122 @@
+---
+import { categories, ui, type Locale } from '../data/catalog.mjs';
+import { indexCatalog } from '../data/catalog-tree.mjs';
+
+interface Props {
+  category?: string;
+  /** Existing authored MDX pages may still use this name. */
+  area?: string;
+  course?: string;
+  module?: string;
+}
+
+const { category: categoryProp, area: areaProp, course: courseId, module: moduleId } = Astro.props;
+const categoryId = categoryProp ?? areaProp;
+const locale: Locale = Astro.locals.starlightRoute.locale === 'en' ? 'en' : 'ru';
+const labels = ui[locale];
+const { categoryById, courseById } = indexCatalog(categories);
+const courseEntry = courseId ? courseById.get(courseId) : undefined;
+const categoryEntry = categoryById.get(categoryId ?? courseEntry?.category.id ?? '');
+const category = categoryEntry?.category;
+const course = courseEntry?.course;
+const module = course?.modules?.find((item) => item.id === moduleId);
+const childCategories = category ? category.children ?? [] : categories;
+const directCourses = category?.courses ?? [];
+const breadcrumbs = [
+  ...(categoryEntry ? [...categoryEntry.ancestors, categoryEntry.category].map((item) => ({ title: item.title[locale], path: `directions/${item.id}` })) : []),
+  ...(course ? [{ title: course.title[locale], path: `courses/${course.id}` }] : []),
+  ...(module && course ? [{ title: module.title[locale], path: `courses/${course.id}/${module.id}` }] : []),
+];
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const href = (path = '') => `${base}/${locale}/${path ? `${path}/` : ''}`;
+
+if ((categoryId && !category) || (courseId && !course) || (moduleId && !module)
+  || (categoryProp && areaProp && categoryProp !== areaProp)
+  || (categoryId && courseEntry && courseEntry.category.id !== categoryId)) {
+  throw new Error(`Unknown or mismatched catalog entry: ${categoryId ?? ''}/${courseId ?? ''}/${moduleId ?? ''}`);
+}
+---
+
+<div class="course-catalog">
+  {breadcrumbs.length > 0 && (
+    <nav class="catalog-breadcrumbs" aria-label={locale === 'ru' ? 'Навигационная цепочка' : 'Breadcrumbs'}>
+      <a href={href()}>{labels.catalog}</a>
+      {breadcrumbs.map((item, index) => <>
+        <span aria-hidden="true">/</span>
+        {index === breadcrumbs.length - 1
+          ? <span aria-current="page">{item.title}</span>
+          : <a href={href(item.path)}>{item.title}</a>}
+      </>)}
+    </nav>
+  )}
+
+  {!category && <p class="catalog-intro">{labels.intro}</p>}
+
+  {!course && childCategories.length > 0 && (
+    <section aria-label={category ? labels.subcategories : labels.catalog}>
+    {category && <h2>{labels.subcategories}</h2>}
+    <div class="catalog-grid">
+      {childCategories.map((item) => (
+        <a class="catalog-card" href={href(`directions/${item.id}`)}>
+          <div class="catalog-card-top"><span class="catalog-kicker">{labels.categoryPrefix}</span><span aria-hidden="true">↗</span></div>
+          {category ? <h3>{item.title[locale]}</h3> : <h2>{item.title[locale]}</h2>}
+          <p>{item.description[locale]}</p>
+          <span class="catalog-course-list">{[...(item.children ?? []), ...(item.courses ?? [])].map((entry) => entry.title[locale]).join(' · ')}</span>
+          <span class="catalog-card-action">{labels.openCategory} <span aria-hidden="true">→</span></span>
+        </a>
+      ))}
+    </div>
+    </section>
+  )}
+
+  {category && !course && directCourses.length > 0 && (
+    <section aria-label={labels.courses}>
+    <h2>{labels.courses}</h2>
+    <div class="catalog-grid">
+      {directCourses.map((item) => (
+        <a class="catalog-card" href={href(`courses/${item.id}`)}>
+          <div class="catalog-card-top"><span class="catalog-kicker">{labels.coursePrefix}</span><span class="catalog-badge">{labels.preparing}</span></div>
+          <h3>{item.title[locale]}</h3>
+          <p>{item.description[locale]}</p>
+          <span class="catalog-card-action">{labels.viewCourse} <span aria-hidden="true">→</span></span>
+        </a>
+      ))}
+    </div>
+    </section>
+  )}
+
+  {category && !course && childCategories.length === 0 && directCourses.length === 0 && (
+    <div class="catalog-empty"><h2>{labels.categoryEmpty}</h2><p>{labels.categoryEmptyBody}</p></div>
+  )}
+
+  {course && !module && (
+    <>
+      <p class="catalog-status"><span class="catalog-badge">{labels.preparing}</span></p>
+      {(course.modules ?? []).length > 0 ? (
+        <section aria-label={labels.modules}>
+          <h2>{labels.modules}</h2>
+          <div class="catalog-grid">
+            {(course.modules ?? []).map((item) => (
+              <a class="catalog-card" href={href(`courses/${course.id}/${item.id}`)}>
+                <span class="catalog-kicker">{labels.modulePrefix}</span>
+                <h3>{item.title[locale]}</h3>
+                <p>{item.description[locale]}</p>
+                <span class="catalog-card-action">{labels.openModule} <span aria-hidden="true">→</span></span>
+              </a>
+            ))}
+          </div>
+        </section>
+      ) : (
+        <div class="catalog-empty"><h2>{labels.emptyTitle}</h2><p>{labels.courseEmpty}</p></div>
+      )}
+    </>
+  )}
+
+  {module && course && (
+    <>
+      <p class="catalog-status"><span class="catalog-badge">{labels.preparing}</span></p>
+      <div class="catalog-empty"><h2>{labels.emptyTitle}</h2><p>{labels.emptyBody}</p></div>
+      <p><a href={href(`courses/${course.id}`)}>← {labels.back}</a></p>
+    </>
+  )}
+</div>

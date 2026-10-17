@@ -1,0 +1,20 @@
+name: courses-dev
+
+services:
+  dev:
+    build:
+      context: .
+      target: development
+    ports:
+      - "4321:4321"
+    environment:
+      ASTRO_TELEMETRY_DISABLED: "1"
+      SITE_URL: ${SITE_URL:-http://localhost:4321}
+      SITE_BASE: ${SITE_BASE:-/}
+    volumes:
+      - .:/app
+      - dependencies:/app/node_modules
+    init: true
+
+volumes:
+  dependencies:

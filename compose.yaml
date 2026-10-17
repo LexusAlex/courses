@@ -1,0 +1,17 @@
+name: courses
+
+services:
+  web:
+    image: courses:local
+    build:
+      context: .
+      target: production
+      args:
+        SITE_URL: ${SITE_URL:-https://lexusalex.ru}
+        SITE_BASE: ${SITE_BASE:-/}
+    ports:
+      - "${HTTP_PORT:-8080}:8080"
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true

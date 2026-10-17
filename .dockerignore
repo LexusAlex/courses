@@ -1,0 +1,10 @@
+node_modules
+dist
+.astro
+.git
+.plan
+.env
+.env.*
+!.env.example
+*.log
+output

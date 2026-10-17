@@ -1,0 +1,50 @@
+name: Check courses
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        base: ["/", "/docs/"]
+    env:
+      ASTRO_TELEMETRY_DISABLED: "1"
+      SITE_URL: https://lexusalex.ru
+      SITE_BASE: ${{ matrix.base }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+      - uses: pnpm/action-setup@v6
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm test
+      - run: pnpm build
+      - run: pnpm verify
+      - run: docker compose config --quiet
+      - run: docker compose -f compose.dev.yaml config --quiet
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build --tag courses:ci .
+      - name: Check static pages and real 404 responses
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --detach --name courses-smoke --publish 127.0.0.1:8080:8080 courses:ci
+          trap 'docker logs courses-smoke; docker rm --force courses-smoke' EXIT
+          curl --fail --retry 15 --retry-connrefused --retry-delay 1 http://127.0.0.1:8080/healthz
+          curl --fail http://127.0.0.1:8080/ru/courses/php/basics/ --output /dev/null
+          curl --fail http://127.0.0.1:8080/en/courses/php/basics/ --output /dev/null
+          test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:8080/missing-page/)" = 404
