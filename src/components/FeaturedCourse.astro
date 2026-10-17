@@ -1,0 +1,33 @@
+---
+import type { Category, Course } from '../data/catalog-tree.mjs';
+import type { Lesson } from '../lib/lessons.mjs';
+import { learningUi } from '../data/learning-ui.mjs';
+import { formatDuration } from '../lib/course-filters.mjs';
+import CourseProgress from './CourseProgress.astro';
+
+interface Props { course: Course; category: Category; lessons: Lesson[]; filter: string; }
+const { course, category, lessons, filter } = Astro.props;
+const locale = Astro.locals.starlightRoute.locale === 'en' ? 'en' : 'ru';
+const labels = learningUi[locale];
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const outline = `${base}/${locale}/courses/${course.id}/`;
+---
+
+<article class="featured-course" data-featured-course data-course-card data-filter={filter}>
+  <div class="featured-course-content">
+    <div class="catalog-card-top">
+      <span class="catalog-kicker">{category.title[locale]}</span>
+      <span class="catalog-badge">{lessons.length ? labels.available : labels.preparing}</span>
+    </div>
+    <h2><a href={outline}>{course.title[locale]}</a></h2>
+    <p>{course.description[locale]}</p>
+    <div class="course-metadata">
+      <span>{labels.difficulty}: {labels.levels[course.difficulty ?? 'unspecified']}</span>
+      <span>{formatDuration(course.durationMinutes, locale)}</span>
+    </div>
+  </div>
+  <div class="featured-course-learning">
+    <CourseProgress courseId={course.id} lessons={lessons} featured />
+    <a class="featured-course-outline" href={outline}>{labels.outline} <span aria-hidden="true">→</span></a>
+  </div>
+</article>

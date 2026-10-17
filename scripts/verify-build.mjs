@@ -35,6 +35,21 @@ for (const locale of locales) {
   const catalog = await readFile(join(root, locale, 'index.html'), 'utf8');
   assert.ok(catalog.includes('data-course-filters'), `${locale}: missing course filters`);
   assert.equal([...catalog.matchAll(/\bdata-course-card(?:\s|=|>)/g)].length, courseById.size, `${locale}: all courses must be accessible without JavaScript`);
+  const featured = /<article\b[^>]*data-featured-course[^>]*>([\s\S]*?)<\/article>/.exec(catalog);
+  assert.equal(Boolean(featured), courseById.size > 0, `${locale}: homepage must feature the first course`);
+  if (featured) {
+    const manifest = JSON.parse(decodeAttribute(/\bdata-lessons="([^"]*)"/.exec(featured[1])?.[1] ?? '[]'));
+    const resume = [...featured[1].matchAll(/<a\b[^>]*>/g)].find((tag) => tag[0].includes('data-progress-resume'))?.[0];
+    const firstCourse = [...courseById.values()][0].course;
+    assert.ok(featured[1].includes(`href="${base}/${locale}/courses/${firstCourse.id}/"`), `${locale}: featured course needs its outline link`);
+    if (manifest.length) {
+      assert.ok(resume?.includes(`href="${base}/${manifest[0].path}/"`), `${locale}: featured start must open its first translated lesson`);
+      assert.ok(manifest[0].path.startsWith(`${locale}/courses/${firstCourse.id}/`), `${locale}: featured lesson belongs to the wrong course or language`);
+    } else {
+      assert.equal(resume, undefined, `${locale}: an empty course must not have a false start action`);
+    }
+    assert.ok(featured.index < catalog.indexOf('data-course-filter-panel'), `${locale}: featured action must appear before filters`);
+  }
   for (const path of expectedPaths) {
     const page = await readFile(join(root, locale, path, 'index.html'), 'utf8');
     assert.match(page, new RegExp(`<html\\b[^>]*\\blang=["']${locale}["']`), `${locale}/${path}: wrong page language`);
@@ -81,6 +96,11 @@ for (const file of htmlFiles) {
   const path = relative(root, file).split(sep).join('/').replace(/index\.html$/, '');
   const pageUrl = new URL(`${base}/${path}`, origin);
   const lessonPage = /^(ru|en)\/courses\/([^/]+)\/(.+)\/$/.exec(path);
+  const filterPanel = /<details\b[^>]*data-course-filter-panel[^>]*>/.exec(html)?.[0];
+  if (filterPanel) {
+    const count = [...html.matchAll(/\bdata-course-card(?:\s|=|>)/g)].length;
+    assert.equal(/\bopen(?:\s|=|>)/.test(filterPanel), count > 1, `${path}: filters must start collapsed only for a single course`);
+  }
   if (lessonPage && !expectedPaths.includes(path.slice(lessonPage[1].length + 1).replace(/\/$/, ''))) {
     assert.ok(html.includes('class="lesson-learning"'), `${path}: missing lesson controls`);
     if (html.includes('class="expressive-code')) {
@@ -89,8 +109,7 @@ for (const file of htmlFiles) {
     }
     const serialized = /\bdata-lessons="([^"]*)"/.exec(html)?.[1];
     assert.ok(serialized, `${path}: missing lesson manifest`);
-    const decoded = serialized.replace(/&#(\d+);/g, (_, value) => String.fromCodePoint(Number(value))).replaceAll('&quot;', '"').replaceAll('&amp;', '&');
-    const sequence = JSON.parse(decoded);
+    const sequence = JSON.parse(decodeAttribute(serialized));
     const position = sequence.findIndex((lesson) => `${lesson.path}/` === path);
     assert.ok(position >= 0, `${path}: current lesson missing from manifest`);
     const nav = /<nav\b[^>]*class="lesson-navigation"[^>]*>([\s\S]*?)<\/nav>/.exec(html)?.[1] ?? '';
@@ -125,3 +144,7 @@ for (const file of htmlFiles) {
   }
 }
 console.log(`Verified ${htmlFiles.length} HTML pages, ${requiredPageCount} required localized routes, filters/metadata/progress, ${checkedLessons} lesson navigations, complete breadcrumbs, locale parity and ${checked} internal links/assets at ${base || '/'}.`);
+
+function decodeAttribute(value) {
+  return value.replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code))).replaceAll('&quot;', '"').replaceAll('&amp;', '&');
+}

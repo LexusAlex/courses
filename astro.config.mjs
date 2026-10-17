@@ -29,6 +29,16 @@ export default defineConfig({
       },
       sidebar: sidebar(),
       pagination: false,
+      expressiveCode: {
+        themes: ['github-dark', 'github-light'],
+        useStarlightUiThemeColors: false,
+        styleOverrides: {
+          borderRadius: '0.65rem',
+          borderColor: 'var(--sl-color-gray-4)',
+          codeFontSize: '0.9375rem',
+          codeLineHeight: '1.7',
+        },
+      },
       components: { MarkdownContent: './src/components/LessonContent.astro' },
       customCss: ['./src/styles/custom.css'],
     }),

@@ -61,14 +61,16 @@ if ((categoryId && !category) || (courseId && !course) || (moduleId && !module)
 
   {!category && <p class="catalog-intro">{labels.intro}</p>}
 
+  {!category && !course && <CourseList featureFirst />}
+
   {!course && childCategories.length > 0 && (
-    <section aria-label={category ? labels.subcategories : labels.catalog}>
-    {category && <h2>{labels.subcategories}</h2>}
+    <section aria-label={category ? labels.subcategories : labels.directions}>
+    <h2>{category ? labels.subcategories : labels.directions}</h2>
     <div class="catalog-grid">
       {childCategories.map((item) => (
         <a class="catalog-card" href={href(`directions/${item.id}`)}>
           <div class="catalog-card-top"><span class="catalog-kicker">{labels.categoryPrefix}</span><span aria-hidden="true">↗</span></div>
-          {category ? <h3>{item.title[locale]}</h3> : <h2>{item.title[locale]}</h2>}
+          <h3>{item.title[locale]}</h3>
           <p>{item.description[locale]}</p>
           <span class="catalog-course-list">{[...(item.children ?? []), ...(item.courses ?? [])].map((entry) => entry.title[locale]).join(' · ')}</span>
           <span class="catalog-card-action">{labels.openCategory} <span aria-hidden="true">→</span></span>
@@ -78,7 +80,7 @@ if ((categoryId && !category) || (courseId && !course) || (moduleId && !module)
     </section>
   )}
 
-  {!course && <CourseList scope={category?.id} />}
+  {category && !course && <CourseList scope={category.id} />}
 
   {category && !course && childCategories.length === 0 && directCourses.length === 0 && (
     <div class="catalog-empty"><h2>{labels.categoryEmpty}</h2><p>{labels.categoryEmptyBody}</p></div>

@@ -1,7 +1,8 @@
 export const learningUi = {
   ru: {
     allCourses: 'Все курсы', categoryCourses: 'Курсы в этой категории',
-    filters: 'Подбор курса', search: 'Поиск по названию и описанию', searchPlaceholder: 'Например, PHP',
+    featuredCourse: 'Начни обучение', localProgress: 'Сохраняется в этом браузере',
+    filters: 'Подбор курса', filtersActive: 'Фильтры применены', search: 'Поиск по названию и описанию', searchPlaceholder: 'Например, PHP',
     category: 'Категория', allCategories: 'Все категории', difficulty: 'Сложность', allLevels: 'Любая сложность',
     levels: { beginner: 'Начальный', intermediate: 'Средний', advanced: 'Продвинутый', unspecified: 'Не указана' },
     duration: 'Длительность', allDurations: 'Любая длительность',
@@ -20,7 +21,8 @@ export const learningUi = {
   },
   en: {
     allCourses: 'All courses', categoryCourses: 'Courses in this category',
-    filters: 'Find a course', search: 'Search titles and descriptions', searchPlaceholder: 'For example, PHP',
+    featuredCourse: 'Start learning', localProgress: 'Saved in this browser',
+    filters: 'Find a course', filtersActive: 'Filters active', search: 'Search titles and descriptions', searchPlaceholder: 'For example, PHP',
     category: 'Category', allCategories: 'All categories', difficulty: 'Difficulty', allLevels: 'Any difficulty',
     levels: { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced', unspecified: 'Not specified' },
     duration: 'Duration', allDurations: 'Any duration',

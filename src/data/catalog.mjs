@@ -30,7 +30,8 @@ export const categories = [
 export const ui = {
   ru: {
     catalog: 'Каталог курсов', title: 'Каталог курсов',
-    intro: 'Сейчас доступен курс PHP с первым тестовым уроком. Программа пополняется по мере подготовки материалов.',
+    intro: 'Изучай новое на практике и сохраняй свой прогресс прямо в браузере.',
+    directions: 'Направления',
     preparing: 'В подготовке', viewCourses: 'Смотреть курсы', viewCourse: 'Программа курса',
     modules: 'Разделы курса', openModule: 'Открыть раздел', back: 'Назад к курсу',
     emptyTitle: 'Уроков пока нет', emptyBody: 'Этот раздел подготовлен для будущих материалов.',
@@ -42,7 +43,8 @@ export const ui = {
   },
   en: {
     catalog: 'Course catalog', title: 'Course catalog',
-    intro: 'Explore PHP with the first sample lesson. More lessons will be added as the course develops.',
+    intro: 'Learn through practice and save your progress in this browser.',
+    directions: 'Subjects',
     preparing: 'In preparation', viewCourses: 'Browse courses', viewCourse: 'Course outline',
     modules: 'Course sections', openModule: 'Open section', back: 'Back to course',
     emptyTitle: 'No lessons yet', emptyBody: 'This section is ready for future materials.',
