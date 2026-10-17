@@ -30,7 +30,7 @@ COPY --from=build /www/ /usr/share/nginx/html/
 # Runtime only needs to read the generated configuration.
 RUN chown -R nginx:nginx /etc/nginx/conf.d /var/cache/nginx && \
     mkdir -p /tmp/nginx && chown nginx:nginx /tmp/nginx && \
-    sed -i 's|/var/run/nginx.pid|/tmp/nginx/nginx.pid|; /^user /d' /etc/nginx/nginx.conf && \
+    sed -i 's|^pid .*|pid /tmp/nginx/nginx.pid;|; /^user /d' /etc/nginx/nginx.conf && \
     SITE_BASE="$(printf '/%s/' "$SITE_BASE" | sed 's|//*|/|g')" && export SITE_BASE && \
     envsubst '${SITE_BASE}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && \
     rm /etc/nginx/templates/default.conf.template
