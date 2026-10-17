@@ -83,6 +83,10 @@ for (const file of htmlFiles) {
   const lessonPage = /^(ru|en)\/courses\/([^/]+)\/(.+)\/$/.exec(path);
   if (lessonPage && !expectedPaths.includes(path.slice(lessonPage[1].length + 1).replace(/\/$/, ''))) {
     assert.ok(html.includes('class="lesson-learning"'), `${path}: missing lesson controls`);
+    if (html.includes('class="expressive-code')) {
+      const copyLabel = lessonPage[1] === 'en' ? 'Copy to clipboard' : 'Копировать';
+      assert.ok(html.includes(`title="${copyLabel}"`), `${path}: code block controls use the wrong language`);
+    }
     const serialized = /\bdata-lessons="([^"]*)"/.exec(html)?.[1];
     assert.ok(serialized, `${path}: missing lesson manifest`);
     const decoded = serialized.replace(/&#(\d+);/g, (_, value) => String.fromCodePoint(Number(value))).replaceAll('&quot;', '"').replaceAll('&amp;', '&');

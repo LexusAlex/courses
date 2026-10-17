@@ -11,7 +11,6 @@ const definitions = [
   ['php/basics/zz-learning-test-first', 'Проверка: первый урок', 'Test: first lesson', 9901, false],
   ['php/basics/zz-learning-test-second', 'Проверка: второй урок', 'Test: second lesson', 9902, false],
   ['php/functions/zz-learning-test-third', 'Проверка: третий урок', 'Test: third lesson', 9901, false],
-  ['git/zz-learning-test-single', 'Проверка: отдельный урок', 'Test: single lesson', 9901, false],
   ['php/basics/zz-learning-test-draft', 'Проверка: черновик', 'Test: draft', 9903, true],
 ];
 const fixtures = ['ru', 'en'].flatMap((locale) => definitions.map(([slug, ru, en, order, draft]) => {

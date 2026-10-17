@@ -1,4 +1,7 @@
 {
   "search.label": "Search courses",
-  "sidebarNav.accessibleLabel": "Course navigation"
+  "sidebarNav.accessibleLabel": "Course navigation",
+  "expressiveCode.copyButtonCopied": "Copied!",
+  "expressiveCode.copyButtonTooltip": "Copy to clipboard",
+  "expressiveCode.terminalWindowFallbackTitle": "Terminal window"
 }

@@ -12,59 +12,17 @@ const t = (ru, en) => ({ ru, en });
 /** @type {Category[]} */
 export const categories = [
   {
-    id: 'technology', title: t('Технологии', 'Technology'),
-    description: t('Курсы по технологиям и программированию.', 'Courses in technology and programming.'),
-    children: [
+    id: 'backend', title: t('Backend сервер', 'Backend server'),
+    description: t('Серверная разработка и языки для backend.', 'Server-side development and backend languages.'),
+    courses: [
       {
-        id: 'programming', title: t('Программирование', 'Programming'),
-        description: t('Языки программирования и разработка приложений.', 'Programming languages and application development.'),
-        children: [
-          {
-            id: 'frontend', title: t('Frontend', 'Frontend'),
-            description: t('Разработка интерфейсов: от структуры страницы до JavaScript.', 'Build interfaces, from page structure to JavaScript.'),
-            courses: [
-              { id: 'html-css', difficulty: 'beginner', durationMinutes: null, title: t('HTML и CSS', 'HTML and CSS'), description: t('Структура документов, стили и адаптивная вёрстка.', 'Document structure, styling, and responsive layouts.'), modules: [] },
-              { id: 'javascript', difficulty: 'beginner', durationMinutes: null, title: t('JavaScript с нуля', 'JavaScript from scratch'), description: t('Основы языка и работа со страницей в браузере.', 'Language fundamentals and working with browser pages.'), modules: [] },
-            ],
-          },
-          {
-            id: 'backend', title: t('Backend', 'Backend'),
-            description: t('Серверная разработка на PHP и организация кода.', 'Server-side PHP development and code organization.'),
-            courses: [
-              {
-                id: 'php', difficulty: 'beginner', durationMinutes: null, title: t('PHP с нуля', 'PHP from scratch'),
-                description: t('Последовательное знакомство с языком PHP.', 'A step-by-step introduction to the PHP language.'),
-                modules: [
-                  { id: 'basics', title: t('Основы языка', 'Language basics'), description: t('Раздел для первых уроков по синтаксису PHP.', 'A section for introductory PHP syntax lessons.') },
-                  { id: 'functions', title: t('Функции и массивы', 'Functions and arrays'), description: t('Раздел для уроков по функциям и работе с массивами.', 'A section for lessons on functions and arrays.') },
-                ],
-              },
-              { id: 'php-oop', difficulty: 'intermediate', durationMinutes: null, title: t('ООП в PHP', 'OOP in PHP'), description: t('Классы, объекты, интерфейсы и организация приложений.', 'Classes, objects, interfaces, and application structure.'), modules: [] },
-            ],
-          },
+        id: 'php', difficulty: 'beginner', durationMinutes: null, title: t('PHP', 'PHP'),
+        description: t('PHP с нуля: синтаксис, функции и массивы. Начни с первого тестового урока.', 'PHP from scratch: syntax, functions, and arrays. Start with the first sample lesson.'),
+        modules: [
+          { id: 'basics', title: t('Основы языка', 'Language basics'), description: t('Раздел для первых уроков по синтаксису PHP.', 'A section for introductory PHP syntax lessons.') },
+          { id: 'functions', title: t('Функции и массивы', 'Functions and arrays'), description: t('Раздел для уроков по функциям и работе с массивами.', 'A section for lessons on functions and arrays.') },
         ],
       },
-    ],
-  },
-  {
-    id: 'databases', title: t('Базы данных', 'Databases'),
-    description: t('Реляционные базы данных и работа с SQL.', 'Relational databases and working with SQL.'),
-    courses: [
-      { id: 'sql', difficulty: 'beginner', durationMinutes: null, title: t('SQL на практике', 'Practical SQL'), description: t('Запросы, связи таблиц и работа с данными.', 'Queries, table relationships, and working with data.'), modules: [] },
-    ],
-  },
-  {
-    id: 'tools', title: t('Инструменты', 'Tools'),
-    description: t('Инструменты повседневной работы разработчика.', 'Tools for everyday development.'),
-    courses: [
-      { id: 'git', difficulty: 'beginner', durationMinutes: null, title: t('Git', 'Git'), description: t('История изменений, ветки и совместная работа.', 'Change history, branches, and collaboration.'), modules: [] },
-    ],
-  },
-  {
-    id: 'infrastructure', title: t('Инфраструктура', 'Infrastructure'),
-    description: t('Окружение для запуска и развертывания приложений.', 'Environments for running and deploying applications.'),
-    courses: [
-      { id: 'docker', difficulty: 'intermediate', durationMinutes: null, title: t('Docker', 'Docker'), description: t('Образы, контейнеры и Docker Compose.', 'Images, containers, and Docker Compose.'), modules: [] },
     ],
   },
 ];
@@ -72,7 +30,7 @@ export const categories = [
 export const ui = {
   ru: {
     catalog: 'Каталог курсов', title: 'Каталог курсов',
-    intro: 'Курсы по разным направлениям. Выбери интересующую тему. Материалы будут появляться по мере подготовки.',
+    intro: 'Сейчас доступен курс PHP с первым тестовым уроком. Программа пополняется по мере подготовки материалов.',
     preparing: 'В подготовке', viewCourses: 'Смотреть курсы', viewCourse: 'Программа курса',
     modules: 'Разделы курса', openModule: 'Открыть раздел', back: 'Назад к курсу',
     emptyTitle: 'Уроков пока нет', emptyBody: 'Этот раздел подготовлен для будущих материалов.',
@@ -84,7 +42,7 @@ export const ui = {
   },
   en: {
     catalog: 'Course catalog', title: 'Course catalog',
-    intro: 'Courses across different subjects. Choose a topic that interests you. Materials will be added as they are prepared.',
+    intro: 'Explore PHP with the first sample lesson. More lessons will be added as the course develops.',
     preparing: 'In preparation', viewCourses: 'Browse courses', viewCourse: 'Course outline',
     modules: 'Course sections', openModule: 'Open section', back: 'Back to course',
     emptyTitle: 'No lessons yet', emptyBody: 'This section is ready for future materials.',
