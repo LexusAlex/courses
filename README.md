@@ -398,11 +398,13 @@ docker compose -f compose.dev.yaml up --build
 - `check.yml` проверяет тесты дерева категорий, функций обучения и ожидания HTTP-сервиса, типы, сборку, переводы, навигационные цепочки, ссылки и оба пути `/` и `/courses/`. Команды Makefile проверяются через `make --dry-run`, без запуска серверов или контейнеров. Дополнительно workflow создаёт временные тестовые уроки для проверки переходов, удаляет их и делает финальную чистую сборку. Отдельный job проверяет Docker-образ на GitHub runner. Проверка `/healthz` повторяет запрос при сбросе соединения во время запуска Nginx и завершается ошибкой, если сервис не готов за отведённое время. Тест `scripts/ci-readiness.test.mjs` воспроизводит такой сброс на обычном локальном HTTP-сервере и проверяет, что постоянно недоступный сервис не принимается за исправный.
 - `deploy-pages.yml` публикует на GitHub Pages **только по ручному запуску** `workflow_dispatch`. Автоматической публикации при push нет.
 
-Когда публикация понадобится:
+Для публикации:
 
 1. Загрузить изменения в репозиторий `LexusAlex/courses`, включая `pnpm-lock.yaml`.
 2. В Settings → Pages репозитория `courses` выбрать Source: GitHub Actions. Домен `lexusalex.ru` должен быть настроен у основного сайта аккаунта `LexusAlex.github.io`; проект `courses` наследует его и получает путь `/courses/`. Поле Custom domain в самом проекте `courses` оставь пустым; `CNAME` с этим доменом в проект не добавляется. Это стандартная [схема домена для сайтов проектов GitHub Pages](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/about-custom-domains-and-github-pages#using-a-custom-domain-across-multiple-repositories).
-3. В Actions вручную запустить “Publish courses to GitHub Pages”.
+3. Открыть [Actions → Publish courses to GitHub Pages](https://github.com/LexusAlex/courses/actions/workflows/deploy-pages.yml), нажать **Run workflow**, выбрать ветку `main` и подтвердить запуск. Дождаться успешного завершения обоих jobs: `build` и `deploy`.
+
+При выборе GitHub Actions в Settings → Pages не создавай дополнительный workflow из предложенных шаблонов: нужный `deploy-pages.yml` уже есть. Шаблон “Deploy static content to Pages” (`static.yml`) публикует файлы репозитория без сборки Astro. Его запуск может завершиться успешно, но `/courses/` и `/courses/ru/` будут возвращать 404: готовые HTML-страницы ещё не созданы. Если такой шаблон был добавлен, удали его и запусти `deploy-pages.yml`, который сначала собирает и проверяет сайт, затем публикует только `dist/`.
 
 Workflow явно задаёт `SITE_URL=https://lexusalex.ru` и `SITE_BASE=/courses/`, поэтому сборка предназначена для **https://lexusalex.ru/courses/**. `actions/configure-pages` настраивает интеграцию с Pages, а адреса в сборке берутся из указанных переменных. Это не меняет DNS или настройки домена автоматически. Если основной сайт обслуживается вне GitHub Pages, маршрут `/courses/` нужно настроить на том хостинге для обслуживания этой сборки. Никакие личные токены в файлы не добавлены.
 
