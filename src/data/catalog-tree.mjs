@@ -1,7 +1,8 @@
 /** @typedef {'ru' | 'en'} Locale */
 /** @typedef {{ ru: string, en: string }} Translation */
 /** @typedef {{ id: string, title: Translation, description: Translation }} Module */
-/** @typedef {{ id: string, title: Translation, description: Translation, modules?: Module[] }} Course */
+/** @typedef {'beginner' | 'intermediate' | 'advanced'} Difficulty */
+/** @typedef {{ id: string, title: Translation, description: Translation, difficulty?: Difficulty, durationMinutes?: number | null, modules?: Module[] }} Course */
 /** @typedef {{ id: string, title: Translation, description: Translation, children?: Category[], courses?: Course[] }} Category */
 /** @typedef {{ category: Category, ancestors: Category[], order: number }} CategoryEntry */
 /** @typedef {{ course: Course, category: Category, ancestors: Category[], order: number }} CourseEntry */
@@ -56,6 +57,12 @@ export function indexCatalog(roots) {
       }
       (category.courses ?? []).forEach((course, courseOrder) => {
         validateEntry(course, 'Course');
+        if (course.difficulty !== undefined && !['beginner', 'intermediate', 'advanced'].includes(course.difficulty)) {
+          throw new Error(`Course "${course.id}": difficulty must be beginner, intermediate or advanced.`);
+        }
+        if (course.durationMinutes != null && (!Number.isSafeInteger(course.durationMinutes) || course.durationMinutes <= 0)) {
+          throw new Error(`Course "${course.id}": durationMinutes must be a positive integer or null.`);
+        }
         if (courseById.has(course.id)) throw new Error(`Duplicate course id "${course.id}".`);
         courseById.set(course.id, { course, category, ancestors, order: courseOrder });
         if (course.modules !== undefined && !Array.isArray(course.modules)) {
@@ -103,7 +110,7 @@ export function buildSidebar(roots) {
   /** @param {Course} course @returns {SidebarGroup} */
   const courseGroup = (course) => ({
     label: course.title.ru, translations: { en: course.title.en }, collapsed: true,
-    items: [
+    items: !(course.modules ?? []).length ? [{ autogenerate: { directory: `courses/${course.id}` } }] : [
       { slug: `courses/${course.id}`, label: 'О курсе', translations: { en: 'About the course' } },
       ...(course.modules ?? []).map((module) => ({
         label: module.title.ru, translations: { en: module.title.en }, collapsed: true,

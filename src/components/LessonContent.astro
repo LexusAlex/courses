@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content';
+import DefaultMarkdownContent from '@astrojs/starlight/components/MarkdownContent.astro';
+import { categories, ui } from '../data/catalog.mjs';
+import { learningUi } from '../data/learning-ui.mjs';
+import { indexCatalog } from '../data/catalog-tree.mjs';
+import { indexLessons, normalizeDocId } from '../lib/lessons.mjs';
+import CourseProgress from './CourseProgress.astro';
+
+const route = Astro.locals.starlightRoute;
+const locale = route.locale === 'en' ? 'en' : 'ru';
+const labels = learningUi[locale];
+const allLessons = indexLessons(await getCollection('docs'), categories);
+const current = allLessons.find((lesson) => lesson.path === normalizeDocId(route.id));
+const sequence = current ? allLessons.filter((lesson) => lesson.courseId === current.courseId && lesson.locale === locale) : [];
+const position = current ? sequence.findIndex((lesson) => lesson.id === current.id) : -1;
+const previous = position > 0 ? sequence[position - 1] : undefined;
+const next = position >= 0 ? sequence[position + 1] : undefined;
+const owner = current ? indexCatalog(categories).courseById.get(current.courseId) : undefined;
+const module = owner?.course.modules?.find((item) => item.id === current?.moduleId);
+const trail = owner ? [
+  ...[...owner.ancestors, owner.category].map((category) => ({ title: category.title[locale], path: `directions/${category.id}` })),
+  { title: owner.course.title[locale], path: `courses/${owner.course.id}` },
+  ...(module ? [{ title: module.title[locale], path: `courses/${owner.course.id}/${module.id}` }] : []),
+] : [];
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+{current && <div class="course-catalog">
+  <nav class="catalog-breadcrumbs" aria-label={locale === 'ru' ? 'Навигационная цепочка' : 'Breadcrumbs'}>
+    <a href={`${base}/${locale}/`}>{ui[locale].catalog}</a>
+    {trail.map((item) => <><span aria-hidden="true">/</span><a href={`${base}/${locale}/${item.path}/`}>{item.title}</a></>)}
+    <span aria-hidden="true">/</span><span aria-current="page">{current.title}</span>
+  </nav>
+</div>}
+<DefaultMarkdownContent {...Astro.props}><slot /></DefaultMarkdownContent>
+{current && <section class="lesson-learning" aria-label={labels.progress}>
+  <h2>{labels.progress}</h2>
+  <CourseProgress courseId={current.courseId} lessons={sequence} currentLessonId={current.id} />
+  <nav class="lesson-navigation" aria-label={labels.lessonNavigation}>
+    {previous && <a class="learning-button" rel="prev" href={`${base}/${previous.path}/`}>{labels.previous}<br /><strong>{previous.title}</strong></a>}
+    {next && <a class="learning-button" rel="next" href={`${base}/${next.path}/`}>{labels.next}<br /><strong>{next.title}</strong></a>}
+  </nav>
+  <p><a href={`${base}/${locale}/courses/${current.courseId}/`}>{labels.back}</a></p>
+</section>}

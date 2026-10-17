@@ -28,6 +28,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm test
+      - name: Verify lesson navigation with temporary content
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/learning-fixtures.mjs add
+          trap 'node scripts/learning-fixtures.mjs remove' EXIT
+          pnpm build
+          pnpm verify
       - run: pnpm build
       - run: pnpm verify
       - run: docker compose config --quiet

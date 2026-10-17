@@ -33,7 +33,7 @@ test('courses remain discoverable below thirty category ancestors', () => {
   for (let depth = 1; depth <= 30; depth++) group = group.items[1];
   assert.equal(group.label, 'Русский leaf');
   assert.equal(group.translations.en, 'English leaf');
-  assert.equal(group.items[1].items[0].slug, 'courses/photography');
+  assert.equal(group.items[1].items[0].autogenerate.directory, 'courses/photography');
 });
 
 test('a category can contain child categories and its own courses', () => {
@@ -46,10 +46,10 @@ test('a category can contain child categories and its own courses', () => {
   assert.equal(group.items[0].slug, 'directions/arts');
   assert.equal(group.items[1].label, 'Русский photography');
   assert.equal(group.items[1].translations.en, 'English photography');
-  assert.equal(group.items[1].items[1].items[0].slug, 'courses/camera');
+  assert.equal(group.items[1].items[1].items[0].autogenerate.directory, 'courses/camera');
   assert.equal(group.items[2].label, 'Русский composition');
   assert.equal(group.items[2].translations.en, 'English composition');
-  assert.equal(group.items[2].items[0].slug, 'courses/composition');
+  assert.equal(group.items[2].items[0].autogenerate.directory, 'courses/composition');
 });
 
 test('moving a category preserves routes and updates translated ancestor trails', () => {

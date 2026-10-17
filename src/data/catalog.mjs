@@ -23,8 +23,8 @@ export const categories = [
             id: 'frontend', title: t('Frontend', 'Frontend'),
             description: t('Разработка интерфейсов: от структуры страницы до JavaScript.', 'Build interfaces, from page structure to JavaScript.'),
             courses: [
-              { id: 'html-css', title: t('HTML и CSS', 'HTML and CSS'), description: t('Структура документов, стили и адаптивная вёрстка.', 'Document structure, styling, and responsive layouts.'), modules: [] },
-              { id: 'javascript', title: t('JavaScript с нуля', 'JavaScript from scratch'), description: t('Основы языка и работа со страницей в браузере.', 'Language fundamentals and working with browser pages.'), modules: [] },
+              { id: 'html-css', difficulty: 'beginner', durationMinutes: null, title: t('HTML и CSS', 'HTML and CSS'), description: t('Структура документов, стили и адаптивная вёрстка.', 'Document structure, styling, and responsive layouts.'), modules: [] },
+              { id: 'javascript', difficulty: 'beginner', durationMinutes: null, title: t('JavaScript с нуля', 'JavaScript from scratch'), description: t('Основы языка и работа со страницей в браузере.', 'Language fundamentals and working with browser pages.'), modules: [] },
             ],
           },
           {
@@ -32,14 +32,14 @@ export const categories = [
             description: t('Серверная разработка на PHP и организация кода.', 'Server-side PHP development and code organization.'),
             courses: [
               {
-                id: 'php', title: t('PHP с нуля', 'PHP from scratch'),
+                id: 'php', difficulty: 'beginner', durationMinutes: null, title: t('PHP с нуля', 'PHP from scratch'),
                 description: t('Последовательное знакомство с языком PHP.', 'A step-by-step introduction to the PHP language.'),
                 modules: [
                   { id: 'basics', title: t('Основы языка', 'Language basics'), description: t('Раздел для первых уроков по синтаксису PHP.', 'A section for introductory PHP syntax lessons.') },
                   { id: 'functions', title: t('Функции и массивы', 'Functions and arrays'), description: t('Раздел для уроков по функциям и работе с массивами.', 'A section for lessons on functions and arrays.') },
                 ],
               },
-              { id: 'php-oop', title: t('ООП в PHP', 'OOP in PHP'), description: t('Классы, объекты, интерфейсы и организация приложений.', 'Classes, objects, interfaces, and application structure.'), modules: [] },
+              { id: 'php-oop', difficulty: 'intermediate', durationMinutes: null, title: t('ООП в PHP', 'OOP in PHP'), description: t('Классы, объекты, интерфейсы и организация приложений.', 'Classes, objects, interfaces, and application structure.'), modules: [] },
             ],
           },
         ],
@@ -50,21 +50,21 @@ export const categories = [
     id: 'databases', title: t('Базы данных', 'Databases'),
     description: t('Реляционные базы данных и работа с SQL.', 'Relational databases and working with SQL.'),
     courses: [
-      { id: 'sql', title: t('SQL на практике', 'Practical SQL'), description: t('Запросы, связи таблиц и работа с данными.', 'Queries, table relationships, and working with data.'), modules: [] },
+      { id: 'sql', difficulty: 'beginner', durationMinutes: null, title: t('SQL на практике', 'Practical SQL'), description: t('Запросы, связи таблиц и работа с данными.', 'Queries, table relationships, and working with data.'), modules: [] },
     ],
   },
   {
     id: 'tools', title: t('Инструменты', 'Tools'),
     description: t('Инструменты повседневной работы разработчика.', 'Tools for everyday development.'),
     courses: [
-      { id: 'git', title: t('Git', 'Git'), description: t('История изменений, ветки и совместная работа.', 'Change history, branches, and collaboration.'), modules: [] },
+      { id: 'git', difficulty: 'beginner', durationMinutes: null, title: t('Git', 'Git'), description: t('История изменений, ветки и совместная работа.', 'Change history, branches, and collaboration.'), modules: [] },
     ],
   },
   {
     id: 'infrastructure', title: t('Инфраструктура', 'Infrastructure'),
     description: t('Окружение для запуска и развертывания приложений.', 'Environments for running and deploying applications.'),
     courses: [
-      { id: 'docker', title: t('Docker', 'Docker'), description: t('Образы, контейнеры и Docker Compose.', 'Images, containers, and Docker Compose.'), modules: [] },
+      { id: 'docker', difficulty: 'intermediate', durationMinutes: null, title: t('Docker', 'Docker'), description: t('Образы, контейнеры и Docker Compose.', 'Images, containers, and Docker Compose.'), modules: [] },
     ],
   },
 ];

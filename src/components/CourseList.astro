@@ -1,0 +1,74 @@
+---
+import { getCollection } from 'astro:content';
+import { categories } from '../data/catalog.mjs';
+import { learningUi } from '../data/learning-ui.mjs';
+import { indexCatalog } from '../data/catalog-tree.mjs';
+import { formatDuration } from '../lib/course-filters.mjs';
+import { indexLessons } from '../lib/lessons.mjs';
+import CourseProgress from './CourseProgress.astro';
+interface Props { scope?: string; }
+const { scope } = Astro.props;
+const locale = Astro.locals.starlightRoute.locale === 'en' ? 'en' : 'ru';
+const labels = learningUi[locale];
+const { courseById, categoryById } = indexCatalog(categories);
+const inScope = (entry: { ancestors: import('../data/catalog-tree.mjs').Category[], category: import('../data/catalog-tree.mjs').Category }) => !scope || [...entry.ancestors, entry.category].some((item) => item.id === scope);
+const courses = [...courseById.values()].filter(inScope);
+const filterCategories = [...categoryById.values()].filter(inScope);
+const published = indexLessons(await getCollection('docs'), categories).filter((lesson) => lesson.locale === locale);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+{courses.length > 0 && <section class="course-list" data-course-list aria-label={scope ? labels.categoryCourses : labels.allCourses}>
+  <h2>{scope ? labels.categoryCourses : labels.allCourses}</h2>
+  <form class="course-filters" data-course-filters hidden aria-label={labels.filters}>
+    <label class="filter-search">{labels.search}<input name="query" type="search" placeholder={labels.searchPlaceholder} /></label>
+    <label>{labels.category}<select name="category"><option value="">{labels.allCategories}</option>{filterCategories.map(({ category, ancestors }) => <option value={category.id}>{[...ancestors, category].map((item) => item.title[locale]).join(' / ')}</option>)}</select></label>
+    <label>{labels.difficulty}<select name="difficulty"><option value="">{labels.allLevels}</option>{Object.entries(labels.levels).map(([value, title]) => <option value={value}>{title}</option>)}</select></label>
+    <label>{labels.duration}<select name="duration"><option value="">{labels.allDurations}</option>{Object.entries(labels.durations).map(([value, title]) => <option value={value}>{title}</option>)}</select></label>
+    <button type="button" class="learning-button" data-filter-reset>{labels.reset}</button>
+  </form>
+  <p class="filter-results" data-filter-count aria-live="polite" data-label={labels.found}>{labels.found}: {courses.length}</p>
+  <p data-filter-empty hidden>{labels.noResults}</p>
+  <div class="catalog-grid">
+    {courses.map(({ course, category, ancestors }) => {
+      const trail = [...ancestors, category];
+      const lessons = published.filter((lesson) => lesson.courseId === course.id);
+      return <a class="catalog-card" href={`${base}/${locale}/courses/${course.id}/`} data-course-card data-filter={JSON.stringify({ search: [course.title[locale], course.description[locale], ...trail.map((item) => item.title[locale])].join(' '), categories: trail.map((item) => item.id), difficulty: course.difficulty, durationMinutes: course.durationMinutes })}>
+        <div class="catalog-card-top"><span class="catalog-kicker">{category.title[locale]}</span><span class="catalog-badge">{lessons.length ? labels.available : labels.preparing}</span></div>
+        <h3>{course.title[locale]}</h3><p>{course.description[locale]}</p>
+        <div class="course-metadata"><span>{labels.difficulty}: {labels.levels[course.difficulty ?? 'unspecified']}</span><span>{formatDuration(course.durationMinutes, locale)}</span></div>
+        <CourseProgress courseId={course.id} lessons={lessons} compact />
+        <span class="catalog-card-action">{labels.outline}<span aria-hidden="true">→</span></span>
+      </a>;
+    })}
+  </div>
+  <noscript><p>{labels.noJs}</p></noscript>
+</section>}
+<script>
+  import { matchesCourse } from '../lib/course-filters.mjs';
+  function initFilters() {
+    document.querySelectorAll<HTMLElement>('[data-course-list]').forEach((root) => {
+      if (root.dataset.filtersBound) return;
+      root.dataset.filtersBound = 'true';
+      const form = root.querySelector<HTMLFormElement>('[data-course-filters]')!;
+      const cards = [...root.querySelectorAll<HTMLElement>('[data-course-card]')];
+      const count = root.querySelector<HTMLElement>('[data-filter-count]')!;
+      const empty = root.querySelector<HTMLElement>('[data-filter-empty]')!;
+      const apply = () => {
+        const values = new FormData(form);
+        const filters = Object.fromEntries(['query', 'category', 'difficulty', 'duration'].map((name) => [name, String(values.get(name) ?? '')]));
+        let visible = 0;
+        cards.forEach((card) => { card.hidden = !matchesCourse(JSON.parse(card.dataset.filter ?? '{}'), filters); if (!card.hidden) visible++; });
+        count.textContent = `${count.dataset.label}: ${visible} / ${cards.length}`;
+        empty.hidden = visible > 0;
+      };
+      form.hidden = false;
+      form.addEventListener('input', apply);
+      form.addEventListener('change', apply);
+      form.addEventListener('submit', (event) => { event.preventDefault(); apply(); });
+      form.querySelector<HTMLButtonElement>('[data-filter-reset]')!.addEventListener('click', () => { form.reset(); apply(); });
+      apply();
+    });
+  }
+  initFilters();
+  document.addEventListener('astro:page-load', initFilters);
+</script>

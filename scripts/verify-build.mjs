@@ -32,6 +32,9 @@ const rootPage = await readFile(join(root, 'index.html'), 'utf8');
 assert.ok(rootPage.includes(`${base}/ru/`), 'The site root must redirect to the Russian catalog.');
 
 for (const locale of locales) {
+  const catalog = await readFile(join(root, locale, 'index.html'), 'utf8');
+  assert.ok(catalog.includes('data-course-filters'), `${locale}: missing course filters`);
+  assert.equal([...catalog.matchAll(/\bdata-course-card(?:\s|=|>)/g)].length, courseById.size, `${locale}: all courses must be accessible without JavaScript`);
   for (const path of expectedPaths) {
     const page = await readFile(join(root, locale, path, 'index.html'), 'utf8');
     assert.match(page, new RegExp(`<html\\b[^>]*\\blang=["']${locale}["']`), `${locale}/${path}: wrong page language`);
@@ -40,6 +43,10 @@ for (const locale of locales) {
   }
   for (const entry of structuralPages) {
     const page = await readFile(join(root, locale, entry.path, 'index.html'), 'utf8');
+    if (entry.props.course && !entry.props.module) {
+      assert.ok(page.includes('class="course-metadata"'), `${locale}/${entry.path}: missing difficulty/duration`);
+      assert.ok(page.includes('data-course-progress'), `${locale}/${entry.path}: missing progress state`);
+    }
     const breadcrumb = /<nav\b[^>]*class="catalog-breadcrumbs"[^>]*>([\s\S]*?)<\/nav>/.exec(page)?.[1];
     assert.ok(breadcrumb, `${locale}/${entry.path}: missing breadcrumbs`);
     const courseEntry = entry.props.course ? courseById.get(entry.props.course) : undefined;
@@ -68,10 +75,29 @@ const localized = (locale) => htmlFiles
 assert.deepEqual(localized('ru'), localized('en'), 'Russian and English page structures must match.');
 
 let checked = 0;
+let checkedLessons = 0;
 for (const file of htmlFiles) {
   const html = await readFile(file, 'utf8');
   const path = relative(root, file).split(sep).join('/').replace(/index\.html$/, '');
   const pageUrl = new URL(`${base}/${path}`, origin);
+  const lessonPage = /^(ru|en)\/courses\/([^/]+)\/(.+)\/$/.exec(path);
+  if (lessonPage && !expectedPaths.includes(path.slice(lessonPage[1].length + 1).replace(/\/$/, ''))) {
+    assert.ok(html.includes('class="lesson-learning"'), `${path}: missing lesson controls`);
+    const serialized = /\bdata-lessons="([^"]*)"/.exec(html)?.[1];
+    assert.ok(serialized, `${path}: missing lesson manifest`);
+    const decoded = serialized.replace(/&#(\d+);/g, (_, value) => String.fromCodePoint(Number(value))).replaceAll('&quot;', '"').replaceAll('&amp;', '&');
+    const sequence = JSON.parse(decoded);
+    const position = sequence.findIndex((lesson) => `${lesson.path}/` === path);
+    assert.ok(position >= 0, `${path}: current lesson missing from manifest`);
+    const nav = /<nav\b[^>]*class="lesson-navigation"[^>]*>([\s\S]*?)<\/nav>/.exec(html)?.[1] ?? '';
+    for (const [relation, offset] of [['prev', -1], ['next', 1]]) {
+      const link = [...nav.matchAll(/<a\b[^>]*>/g)].find((tag) => tag[0].includes(`rel="${relation}"`));
+      const expected = sequence[position + offset];
+      assert.equal(link ? /\bhref="([^"]*)"/.exec(link[0])?.[1] : undefined, expected ? `${base}/${expected.path}/` : undefined, `${path}: wrong ${relation} lesson`);
+      if (expected) assert.ok(expected.path.startsWith(`${lessonPage[1]}/courses/${lessonPage[2]}/`), `${path}: navigation crosses a course or language boundary`);
+    }
+    checkedLessons++;
+  }
   for (const tag of html.matchAll(/<(?:a|img|script|link|source)\b[^>]*>/g)) {
     // Canonical/hreflang URLs describe pages; they are not fetched resources.
     // The built-in 404 page intentionally describes URLs that do not exist.
@@ -94,4 +120,4 @@ for (const file of htmlFiles) {
     checked++;
   }
 }
-console.log(`Verified ${htmlFiles.length} HTML pages, ${requiredPageCount} required localized routes, complete breadcrumbs, locale parity and ${checked} internal links/assets at ${base || '/'}.`);
+console.log(`Verified ${htmlFiles.length} HTML pages, ${requiredPageCount} required localized routes, filters/metadata/progress, ${checkedLessons} lesson navigations, complete breadcrumbs, locale parity and ${checked} internal links/assets at ${base || '/'}.`);

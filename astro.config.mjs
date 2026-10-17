@@ -29,6 +29,7 @@ export default defineConfig({
       },
       sidebar: sidebar(),
       pagination: false,
+      components: { MarkdownContent: './src/components/LessonContent.astro' },
       customCss: ['./src/styles/custom.css'],
     }),
   ],
