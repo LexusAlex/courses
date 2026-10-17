@@ -19,10 +19,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ASTRO_TELEMETRY_DISABLED: "1"
+      # Public project site, inheriting the domain of the account's Pages site.
+      SITE_URL: https://lexusalex.ru
+      SITE_BASE: /courses/
     steps:
       - uses: actions/checkout@v7
-      - name: Read Pages URL and subpath
-        id: pages
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - uses: actions/setup-node@v7
         with:
@@ -31,10 +33,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm test
-      - name: Build and validate the actual publication path
-        env:
-          SITE_URL: ${{ steps.pages.outputs.origin }}
-          SITE_BASE: ${{ steps.pages.outputs.base_path }}
+      - name: Build and validate https://lexusalex.ru/courses/
         run: |
           pnpm build
           pnpm verify
