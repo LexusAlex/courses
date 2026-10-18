@@ -12,12 +12,15 @@ const t = (ru, en) => ({ ru, en });
 /** @type {Category[]} */
 export const categories = [
   {
-    id: 'backend', title: t('Backend сервер', 'Backend server'),
+    id: 'backend', icon: 'code', title: t('Backend сервер', 'Backend server'),
     description: t('Серверная разработка и языки для backend.', 'Server-side development and backend languages.'),
     courses: [
       {
         id: 'php', difficulty: 'beginner', durationMinutes: null, title: t('PHP', 'PHP'),
         description: t('PHP с нуля: синтаксис, функции и массивы. Начни с первого тестового урока.', 'PHP from scratch: syntax, functions, and arrays. Start with the first sample lesson.'),
+        audience: { ru: ['Для начинающих, которые хотят освоить PHP и серверную разработку.'], en: ['For beginners who want to learn PHP and server-side development.'] },
+        prerequisites: { ru: ['Умение работать с файлами и текстовым редактором.', 'Установленный PHP и доступ к терминалу.'], en: ['Basic familiarity with files and a text editor.', 'PHP installed and access to a terminal.'] },
+        outcomes: { ru: ['Создать и запустить PHP-программу.', 'Освоить базовый синтаксис, функции и массивы по мере публикации разделов.'], en: ['Create and run a PHP program.', 'Learn basic syntax, functions, and arrays as course sections are published.'] },
         modules: [
           { id: 'basics', title: t('Основы языка', 'Language basics'), description: t('Раздел для первых уроков по синтаксису PHP.', 'A section for introductory PHP syntax lessons.') },
           { id: 'functions', title: t('Функции и массивы', 'Functions and arrays'), description: t('Раздел для уроков по функциям и работе с массивами.', 'A section for lessons on functions and arrays.') },

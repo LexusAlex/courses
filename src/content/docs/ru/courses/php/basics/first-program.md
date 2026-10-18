@@ -1,6 +1,8 @@
 ---
 title: "Урок 1. Первая программа на PHP"
 description: "Запускаем PHP из терминала, выводим текст и выполняем первое задание."
+author: LexusAlex
+durationMinutes: null
 sidebar:
   order: 1
 ---

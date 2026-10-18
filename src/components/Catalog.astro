@@ -7,6 +7,9 @@ import { formatDuration } from '../lib/course-filters.mjs';
 import { indexLessons } from '../lib/lessons.mjs';
 import CourseList from './CourseList.astro';
 import CourseProgress from './CourseProgress.astro';
+import CourseOutline from './CourseOutline.astro';
+import ProgressTransfer from './ProgressTransfer.astro';
+import SubjectIcon from './SubjectIcon.astro';
 
 interface Props {
   category?: string;
@@ -69,7 +72,7 @@ if ((categoryId && !category) || (courseId && !course) || (moduleId && !module)
     <div class="catalog-grid">
       {childCategories.map((item) => (
         <a class="catalog-card" href={href(`directions/${item.id}`)}>
-          <div class="catalog-card-top"><span class="catalog-kicker">{labels.categoryPrefix}</span><span aria-hidden="true">↗</span></div>
+          <div class="catalog-card-top"><SubjectIcon name={item.icon} /><span class="catalog-kicker">{labels.categoryPrefix}</span><span aria-hidden="true">↗</span></div>
           <h3>{item.title[locale]}</h3>
           <p>{item.description[locale]}</p>
           <span class="catalog-course-list">{[...(item.children ?? []), ...(item.courses ?? [])].map((entry) => entry.title[locale]).join(' · ')}</span>
@@ -91,21 +94,11 @@ if ((categoryId && !category) || (courseId && !course) || (moduleId && !module)
       <p class="catalog-status"><span class="catalog-badge">{lessons.length ? learningLabels.available : labels.preparing}</span></p>
       <div class="course-metadata"><span>{learningLabels.difficulty}: {learningLabels.levels[course.difficulty ?? 'unspecified']}</span><span>{formatDuration(course.durationMinutes, locale)}</span></div>
       <CourseProgress courseId={course.id} lessons={lessons} />
-      {(course.modules ?? []).length > 0 ? (
-        <section aria-label={labels.modules}>
-          <h2>{labels.modules}</h2>
-          <div class="catalog-grid">
-            {(course.modules ?? []).map((item) => (
-              <a class="catalog-card" href={href(`courses/${course.id}/${item.id}`)}>
-                <span class="catalog-kicker">{labels.modulePrefix}</span>
-                <h3>{item.title[locale]}</h3>
-                <p>{item.description[locale]}</p>
-                <span class="catalog-card-action">{labels.openModule} <span aria-hidden="true">→</span></span>
-              </a>
-            ))}
-          </div>
-        </section>
-      ) : null}
+      <div class="course-goals">{(['audience', 'prerequisites', 'outcomes'] as const).map((field) => course[field] && <section>
+        <h2>{learningLabels[field]}</h2><ul>{course[field]![locale].map((point) => <li>{point}</li>)}</ul>
+      </section>)}</div>
+      <CourseOutline course={course} lessons={lessons} />
+      <ProgressTransfer />
     </>
   )}
 
@@ -118,7 +111,7 @@ if ((categoryId && !category) || (courseId && !course) || (moduleId && !module)
     </>
   )}
 
-  {course && listedLessons.length > 0 && <section aria-label={learningLabels.lessons}>
+  {course && module && listedLessons.length > 0 && <section aria-label={learningLabels.lessons}>
     <h2>{learningLabels.lessons}</h2>
     <ol class="lesson-list">{listedLessons.map((lesson) => <li><a href={`${base}/${lesson.path}/`}>{lesson.title}</a></li>)}</ol>
   </section>}

@@ -1,0 +1,17 @@
+---
+import { learningUi } from '../data/learning-ui.mjs';
+const locale = Astro.locals.starlightRoute.locale === 'en' ? 'en' : 'ru';
+const labels = learningUi[locale];
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<details class="progress-transfer" data-progress-transfer data-locale={locale} data-base={base} hidden>
+  <summary>{labels.transfer}</summary>
+  <p class="learning-note">{labels.transferNote}</p>
+  <div class="learning-actions">
+    <button type="button" class="learning-button" data-progress-export>{labels.exportProgress}</button>
+    <button type="button" class="learning-button" data-progress-import-button>{labels.importProgress}</button>
+    <input type="file" accept=".json,application/json" data-progress-import aria-label={labels.importProgress} hidden />
+  </div>
+  <p class="learning-note" data-transfer-status role="status" aria-live="polite"></p>
+</details>
+<script>import '../scripts/progress';</script>

@@ -5,8 +5,12 @@ DOCKER ?= docker
 HOST ?= 127.0.0.1
 DEV_PORT ?= 4321
 PREVIEW_PORT ?= 4322
+COURSE ?= php
+MODULE ?= basics
+SLUG ?=
+URL ?= https://lexusalex.ru/courses/
 
-.PHONY: help install dev start scaffold build preview serve check test verify validate ci \
+.PHONY: help install dev start scaffold build preview serve check test verify validate ci lesson e2e smoke \
         docker-config docker-build docker-up docker-down docker-logs docker-dev docker-dev-down
 
 help:
@@ -14,6 +18,9 @@ help:
 	@echo "make install       Install locked dependencies"
 	@echo "make dev           Start development server (localhost:4321)"
 	@echo "make scaffold      Create missing RU/EN structure pages"
+	@echo "make lesson COURSE=php MODULE=basics SLUG=variables  Create paired RU/EN drafts"
+	@echo "make e2e           Run browser checks against the existing build"
+	@echo "make smoke URL=https://lexusalex.ru/courses/  Check a deployed site (read only)"
 	@echo "make build         Build static site into dist/"
 	@echo "make preview       Preview the existing build (localhost:4322)"
 	@echo "make serve         Build and preview production locally"
@@ -55,6 +62,15 @@ check:
 
 test:
 	$(PNPM) test
+
+lesson:
+	$(PNPM) lesson --course "$(COURSE)" $(if $(MODULE),--module "$(MODULE)") --slug "$(SLUG)"
+
+e2e:
+	$(PNPM) test:e2e
+
+smoke:
+	$(PNPM) smoke --url "$(URL)"
 
 verify:
 	$(PNPM) verify

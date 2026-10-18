@@ -1,5 +1,13 @@
 export const learningUi = {
   ru: {
+    audience: 'Кому подходит', prerequisites: 'Что понадобится', outcomes: 'Чему научишься',
+    program: 'Программа обучения', lessonCount: 'Опубликовано уроков: {count}', developing: 'В разработке',
+    notStarted: 'Не начат', current: 'Текущий урок', completed: 'Пройден', moduleProgress: 'Пройдено {done} из {total}',
+    completeNext: 'Завершить и перейти дальше', completeFinish: 'Завершить и к программе', goNext: 'Перейти дальше',
+    transfer: 'Перенос прогресса', transferNote: 'Сохрани прогресс в файл и перенеси его в другой браузер. При импорте отметки объединяются.',
+    exportProgress: 'Скачать прогресс', importProgress: 'Загрузить прогресс', exportDone: 'Файл прогресса подготовлен.',
+    importDone: 'Прогресс объединён с сохранёнными отметками.', importError: 'Файл не подходит или повреждён. Выбери файл прогресса courses размером до 1 МБ.', exportError: 'Не удалось подготовить файл прогресса.',
+    author: 'Автор', reportIssue: 'Сообщить об ошибке',
     allCourses: 'Все курсы', categoryCourses: 'Курсы в этой категории',
     featuredCourse: 'Начни обучение', localProgress: 'Сохраняется в этом браузере',
     filters: 'Подбор курса', filtersActive: 'Фильтры применены', search: 'Поиск по названию и описанию', searchPlaceholder: 'Например, PHP',
@@ -20,6 +28,14 @@ export const learningUi = {
     lessonNavigation: 'Переходы между уроками',
   },
   en: {
+    audience: 'Who this is for', prerequisites: 'What you need', outcomes: 'What you will learn',
+    program: 'Learning program', lessonCount: 'Published lessons: {count}', developing: 'In development',
+    notStarted: 'Not started', current: 'Current lesson', completed: 'Completed', moduleProgress: '{done} of {total} completed',
+    completeNext: 'Complete and continue', completeFinish: 'Complete and view outline', goNext: 'Continue to next lesson',
+    transfer: 'Transfer progress', transferNote: 'Save your progress to a file and move it to another browser. Import merges completion marks.',
+    exportProgress: 'Download progress', importProgress: 'Upload progress', exportDone: 'Your progress file is ready.',
+    importDone: 'Progress merged with your existing completion marks.', importError: 'Invalid or damaged file. Choose a courses progress backup up to 1 MB.', exportError: 'Could not prepare a progress backup.',
+    author: 'Author', reportIssue: 'Report an issue',
     allCourses: 'All courses', categoryCourses: 'Courses in this category',
     featuredCourse: 'Start learning', localProgress: 'Saved in this browser',
     filters: 'Find a course', filtersActive: 'Filters active', search: 'Search titles and descriptions', searchPlaceholder: 'For example, PHP',

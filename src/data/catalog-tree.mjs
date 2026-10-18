@@ -2,8 +2,9 @@
 /** @typedef {{ ru: string, en: string }} Translation */
 /** @typedef {{ id: string, title: Translation, description: Translation }} Module */
 /** @typedef {'beginner' | 'intermediate' | 'advanced'} Difficulty */
-/** @typedef {{ id: string, title: Translation, description: Translation, difficulty?: Difficulty, durationMinutes?: number | null, modules?: Module[] }} Course */
-/** @typedef {{ id: string, title: Translation, description: Translation, children?: Category[], courses?: Course[] }} Category */
+/** @typedef {{ ru: string[], en: string[] }} LearningPoints */
+/** @typedef {{ id: string, title: Translation, description: Translation, difficulty?: Difficulty, durationMinutes?: number | null, audience?: LearningPoints, prerequisites?: LearningPoints, outcomes?: LearningPoints, modules?: Module[] }} Course */
+/** @typedef {{ id: string, title: Translation, description: Translation, icon?: 'book' | 'code' | 'camera' | 'science' | 'art' | 'music', children?: Category[], courses?: Course[] }} Category */
 /** @typedef {{ category: Category, ancestors: Category[], order: number }} CategoryEntry */
 /** @typedef {{ course: Course, category: Category, ancestors: Category[], order: number }} CourseEntry */
 /** @typedef {{ slug: string, label: string, translations: { en: string } }} SidebarLink */
@@ -46,6 +47,9 @@ export function indexCatalog(roots) {
     nodes.forEach((category, order) => {
       if (visiting.has(category)) throw new Error(`Category cycle detected at "${category.id}".`);
       validateEntry(category, 'Category');
+      if (category.icon !== undefined && !['book', 'code', 'camera', 'science', 'art', 'music'].includes(category.icon)) {
+        throw new Error(`Category "${category.id}": unknown icon.`);
+      }
       if (categoryById.has(category.id)) throw new Error(`Duplicate category id "${category.id}".`);
       categoryById.set(category.id, { category, ancestors, order });
       visiting.add(category);
@@ -57,6 +61,15 @@ export function indexCatalog(roots) {
       }
       (category.courses ?? []).forEach((course, courseOrder) => {
         validateEntry(course, 'Course');
+        for (const field of /** @type {const} */ (['audience', 'prerequisites', 'outcomes'])) {
+          if (course[field] === undefined) continue;
+          for (const locale of /** @type {const} */ (['ru', 'en'])) {
+            const points = course[field]?.[locale];
+            if (!Array.isArray(points) || !points.length || points.some((point) => typeof point !== 'string' || !point.trim())) {
+              throw new Error(`Course "${course.id}": ${field}.${locale} must be a nonempty list of text.`);
+            }
+          }
+        }
         if (course.difficulty !== undefined && !['beginner', 'intermediate', 'advanced'].includes(course.difficulty)) {
           throw new Error(`Course "${course.id}": difficulty must be beginner, intermediate or advanced.`);
         }

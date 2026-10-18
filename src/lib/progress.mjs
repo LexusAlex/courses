@@ -48,3 +48,43 @@ export function saveProgress(storage, key, state) {
   try { storage.setItem(key, JSON.stringify(state)); return true; }
   catch { return false; }
 }
+
+export const MAX_BACKUP_BYTES = 1024 * 1024;
+
+/** A portable backup contains no locale, domain or deployment path.
+ * @param {ProgressState} state
+ */
+export function exportProgress(state) {
+  const raw = JSON.stringify({ format: 'courses-progress', version: 1, exportedAt: new Date().toISOString(), state }, null, 2);
+  importProgress(raw);
+  return raw;
+}
+
+/** Strict parsing is separate from the forgiving browser-cache reader.
+ * @param {string} raw @returns {ProgressState}
+ */
+export function importProgress(raw) {
+  if (new TextEncoder().encode(raw).byteLength > MAX_BACKUP_BYTES) throw new Error('Backup exceeds the size limit.');
+  let value;
+  try { value = JSON.parse(raw.replace(/^\uFEFF/, '')); } catch { throw new Error('Invalid progress backup.'); }
+  const state = value?.state;
+  const valid = (items) => Array.isArray(items) && items.length <= 10000 && items.every((id) => typeof id === 'string' && id.length < 1024 && id.includes('/') && !/[\u0000-\u001f]/.test(id));
+  if (value?.format !== 'courses-progress' || value.version !== 1 || state?.version !== 1 || !valid(state.completed) || !valid(state.lastVisited)) {
+    throw new Error('Unsupported or invalid progress backup.');
+  }
+  return { version: 1, completed: [...new Set(state.completed)], lastVisited: [...new Set(state.lastVisited)] };
+}
+
+/** Imported completions are additive; recent visits from the backup take priority.
+ * @param {ProgressState} current @param {ProgressState} incoming @returns {ProgressState}
+ */
+export function mergeProgress(current, incoming) {
+  const courses = new Set();
+  const lastVisited = [...incoming.lastVisited, ...current.lastVisited].filter((id) => {
+    const course = id.split('/')[0];
+    if (courses.has(course)) return false;
+    courses.add(course);
+    return true;
+  });
+  return { version: 1, completed: [...new Set([...current.completed, ...incoming.completed])], lastVisited };
+}

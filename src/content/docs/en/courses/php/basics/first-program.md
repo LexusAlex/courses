@@ -1,6 +1,8 @@
 ---
 title: "Lesson 1. Your first PHP program"
 description: "Run PHP from the terminal, print text, and complete your first exercise."
+author: LexusAlex
+durationMinutes: null
 sidebar:
   order: 1
 ---

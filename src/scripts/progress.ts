@@ -1,5 +1,5 @@
 import { learningUi } from '../data/learning-ui.mjs';
-import { courseProgress, emptyProgress, progressStorageKey, readProgress, saveProgress, setCompleted, visitLesson, type ProgressState } from '../lib/progress.mjs';
+import { courseProgress, emptyProgress, progressStorageKey, readProgress, saveProgress, setCompleted, visitLesson, exportProgress, importProgress, mergeProgress, MAX_BACKUP_BYTES, type ProgressState } from '../lib/progress.mjs';
 
 type ManifestLesson = { id: string; path: string };
 const memory = new Map<string, ProgressState>();
@@ -20,8 +20,10 @@ function read(key: string) {
 
 function write(key: string, state: ProgressState) {
   memory.set(key, state);
-  if (saveProgress(storage, key, state)) errors.delete(key);
+  const saved = saveProgress(storage, key, state);
+  if (saved) errors.delete(key);
   else errors.add(key);
+  return saved;
 }
 
 function render() {
@@ -47,6 +49,28 @@ function render() {
     }
     const error = root.querySelector<HTMLElement>('[data-storage-error]');
     if (error) error.hidden = !errors.has(key);
+    const completeAndGo = root.querySelector<HTMLAnchorElement>('[data-complete-and-go]');
+    if (completeAndGo) {
+      completeAndGo.hidden = false;
+      const done = state.completed.includes(root.dataset.currentLesson ?? '');
+      completeAndGo.textContent = root.dataset.hasNext === 'true' ? (done ? labels.goNext : labels.completeNext) : (done ? labels.back : labels.completeFinish);
+    }
+  });
+  document.querySelectorAll<HTMLElement>('[data-course-outline]').forEach((root) => {
+    const state = read(progressStorageKey(root.dataset.base ?? ''));
+    const labels = learningUi[root.dataset.locale === 'en' ? 'en' : 'ru'];
+    root.querySelectorAll<HTMLElement>('[data-lesson-row]').forEach((row) => {
+      const id = row.dataset.lessonId ?? '';
+      const status = state.completed.includes(id) ? 'completed' : state.lastVisited.includes(id) ? 'current' : 'notStarted';
+      row.dataset.state = status;
+      const badge = row.querySelector<HTMLElement>('[data-lesson-status]');
+      if (badge) badge.textContent = labels[status];
+    });
+    root.querySelectorAll<HTMLElement>('[data-module-lessons]').forEach((badge) => {
+      const ids: string[] = JSON.parse(badge.dataset.moduleLessons ?? '[]');
+      const done = ids.filter((id) => state.completed.includes(id)).length;
+      badge.textContent = labels.moduleProgress.replace('{done}', String(done)).replace('{total}', String(ids.length));
+    });
   });
 }
 
@@ -64,7 +88,48 @@ function init() {
         write(key, setCompleted(visitLesson(read(key), current), current, (event.currentTarget as HTMLInputElement).checked));
         render();
       });
+      root.querySelector<HTMLAnchorElement>('[data-complete-and-go]')?.addEventListener('click', (event) => {
+        if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return;
+        if (!write(key, setCompleted(visitLesson(read(key), current), current, true))) event.preventDefault();
+        render();
+      });
     }
+  });
+  document.querySelectorAll<HTMLElement>('[data-progress-transfer]').forEach((root) => {
+    if (root.dataset.transferBound) return;
+    root.dataset.transferBound = 'true';
+    root.hidden = false;
+    const key = progressStorageKey(root.dataset.base ?? '');
+    const labels = learningUi[root.dataset.locale === 'en' ? 'en' : 'ru'];
+    const status = root.querySelector<HTMLElement>('[data-transfer-status]')!;
+    const input = root.querySelector<HTMLInputElement>('[data-progress-import]')!;
+    root.querySelector('[data-progress-import-button]')!.addEventListener('click', () => input.click());
+    root.querySelector('[data-progress-export]')!.addEventListener('click', () => {
+      try {
+        const blob = new Blob([exportProgress(read(key))], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'courses-progress.json';
+        document.body.append(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        status.textContent = labels.exportDone;
+      } catch { status.textContent = labels.exportError; }
+    });
+    input.addEventListener('change', async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      try {
+        if (file.size > MAX_BACKUP_BYTES) throw new Error('Backup size limit');
+        const incoming = importProgress(await file.text());
+        const saved = write(key, mergeProgress(read(key), incoming));
+        status.textContent = saved ? labels.importDone : labels.storageError;
+        render();
+      } catch { status.textContent = labels.importError; }
+      finally { input.value = ''; }
+    });
   });
   render();
 }

@@ -24,6 +24,8 @@ jobs:
       SITE_BASE: /courses/
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - uses: actions/setup-node@v7
@@ -48,5 +50,12 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
       - uses: actions/deploy-pages@v5
         id: deployment
+      - name: Verify published pages and assets
+        timeout-minutes: 6
+        run: node scripts/check-deployment.mjs --url https://lexusalex.ru/courses/ --attempts 12 --delay 5000

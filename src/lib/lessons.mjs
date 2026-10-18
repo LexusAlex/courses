@@ -1,7 +1,7 @@
 import { catalogPages, indexCatalog } from '../data/catalog-tree.mjs';
 
-/** @typedef {{ id: string, data: { title: string, draft?: boolean, sidebar?: { order?: number, hidden?: boolean } }, filePath?: string }} Doc */
-/** @typedef {{ id: string, courseId: string, locale: 'ru' | 'en', path: string, title: string, moduleId?: string, order: number, sortPath: string }} Lesson */
+/** @typedef {{ id: string, data: { title: string, draft?: boolean, durationMinutes?: number | null, sidebar?: { order?: number, hidden?: boolean } }, filePath?: string }} Doc */
+/** @typedef {{ id: string, courseId: string, locale: 'ru' | 'en', path: string, title: string, moduleId?: string, durationMinutes?: number | null, order: number, sortPath: string }} Lesson */
 
 /** @param {string} id */
 export const normalizeDocId = (id) => id.replace(/\\/g, '/').replace(/\.(?:md|mdx)$/, '').replace(/(?:^|\/)index$/, '').replace(/^\/+|\/+$/g, '');
@@ -58,7 +58,7 @@ export function indexLessons(entries, roots) {
     const sourceRelative = entry.filePath?.replace(/\\/g, '/').split(`/courses/${courseId}/`)[1]?.replace(/\.(?:md|mdx)$/, '') ?? relativeLesson;
     const lesson = {
       id: `${courseId}/${relativeLesson}`, courseId, locale: /** @type {'ru' | 'en'} */ (language),
-      path, title: entry.data.title, moduleId, order,
+      path, title: entry.data.title, moduleId, durationMinutes: entry.data.durationMinutes, order,
       sortPath: moduleId ? sourceRelative.slice(moduleId.length + 1) : sourceRelative,
     };
     const group = `${language}/${courseId}/${moduleOrder}`;

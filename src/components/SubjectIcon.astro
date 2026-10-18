@@ -1,0 +1,13 @@
+---
+interface Props { name?: string; }
+const { name = 'book' } = Astro.props;
+const paths: Record<string, string> = {
+  book: 'M12 7C8 4 4 5 3 6v14c3-2 6-1 9 1 3-2 6-3 9-1V6c-3-2-6-1-9 1Zm0 0v14',
+  code: 'm8 6-6 6 6 6m8-12 6 6-6 6m-3-14-2 16',
+  camera: 'M3 7h4l2-3h6l2 3h4v14H3V7Zm13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z',
+  science: 'M9 3h6m-5 0v6L4 20h16L14 9V3M8 15h8',
+  art: 'M12 3a9 9 0 1 0 0 18h1a2 2 0 0 0 0-4 2 2 0 0 1 0-4h3a5 5 0 0 0 5-5c0-3-5-5-9-5ZM7 9h.01M11 6h.01M16 7h.01',
+  music: 'M9 18V5l11-2v13M9 7l11-2M9 18a3 3 0 1 1-3-3c2 0 3 1 3 3Zm11-2a3 3 0 1 1-3-3c2 0 3 1 3 3Z',
+};
+---
+<svg class="subject-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={paths[name] ?? paths.book} /></svg>

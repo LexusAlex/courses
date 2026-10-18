@@ -9,7 +9,7 @@ RUN pnpm install --frozen-lockfile
 FROM dependencies AS development
 COPY . .
 EXPOSE 4321
-CMD ["pnpm", "dev"]
+CMD ["pnpm", "dev", "--host", "0.0.0.0"]
 
 FROM dependencies AS build
 ARG SITE_URL=https://lexusalex.ru

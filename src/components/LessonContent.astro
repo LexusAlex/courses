@@ -6,6 +6,7 @@ import { learningUi } from '../data/learning-ui.mjs';
 import { indexCatalog } from '../data/catalog-tree.mjs';
 import { indexLessons, normalizeDocId } from '../lib/lessons.mjs';
 import CourseProgress from './CourseProgress.astro';
+import { formatDuration } from '../lib/course-filters.mjs';
 
 const route = Astro.locals.starlightRoute;
 const locale = route.locale === 'en' ? 'en' : 'ru';
@@ -24,6 +25,10 @@ const trail = owner ? [
   ...(module ? [{ title: module.title[locale], path: `courses/${owner.course.id}/${module.id}` }] : []),
 ] : [];
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const contentData = route.entry.data;
+const report = new URL('https://github.com/LexusAlex/courses/issues/new');
+report.searchParams.set('title', `${labels.reportIssue}: ${current?.title ?? contentData.title}`);
+report.searchParams.set('body', `${locale === 'ru' ? 'Страница' : 'Page'}: ${new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin)}\n\n${locale === 'ru' ? 'Описание ошибки:' : 'Issue description:'}\n`);
 ---
 {current && <div class="course-catalog">
   <nav class="catalog-breadcrumbs" aria-label={locale === 'ru' ? 'Навигационная цепочка' : 'Breadcrumbs'}>
@@ -32,10 +37,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <span aria-hidden="true">/</span><span aria-current="page">{current.title}</span>
   </nav>
 </div>}
+{current && <div class="lesson-meta">
+  {contentData.author && <span>{labels.author}: {contentData.author}</span>}
+  {current.durationMinutes != null && <span>{formatDuration(current.durationMinutes, locale)}</span>}
+  <a href={report.href} target="_blank" rel="noopener noreferrer">{labels.reportIssue}</a>
+</div>}
 <DefaultMarkdownContent {...Astro.props}><slot /></DefaultMarkdownContent>
 {current && <section class="lesson-learning" aria-label={labels.progress}>
   <h2>{labels.progress}</h2>
-  <CourseProgress courseId={current.courseId} lessons={sequence} currentLessonId={current.id} />
+  <CourseProgress courseId={current.courseId} lessons={sequence} currentLessonId={current.id} nextLesson={next} />
   <nav class="lesson-navigation" aria-label={labels.lessonNavigation}>
     {previous && <a class="learning-button" rel="prev" href={`${base}/${previous.path}/`}>{labels.previous}<br /><strong>{previous.title}</strong></a>}
     {next && <a class="learning-button" rel="next" href={`${base}/${next.path}/`}>{labels.next}<br /><strong>{next.title}</strong></a>}

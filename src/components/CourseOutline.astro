@@ -1,0 +1,30 @@
+---
+import type { Course } from '../data/catalog-tree.mjs';
+import type { Lesson } from '../lib/lessons.mjs';
+import { learningUi } from '../data/learning-ui.mjs';
+import { formatDuration } from '../lib/course-filters.mjs';
+interface Props { course: Course; lessons: Lesson[]; }
+const { course, lessons } = Astro.props;
+const locale = Astro.locals.starlightRoute.locale === 'en' ? 'en' : 'ru';
+const labels = learningUi[locale];
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const groups = course.modules?.length
+  ? course.modules.map((module) => ({ title: module.title[locale], description: module.description[locale], lessons: lessons.filter((lesson) => lesson.moduleId === module.id) }))
+  : [{ title: labels.lessons, description: '', lessons }];
+const firstPublished = groups.findIndex((group) => group.lessons.length > 0);
+---
+<section class="course-outline" data-course-outline data-locale={locale} data-base={base} aria-label={labels.program}>
+  <h2>{labels.program}</h2>
+  <p class="learning-note">{labels.lessonCount.replace('{count}', String(lessons.length))}</p>
+  {groups.map((group, index) => <details class="program-module" open={index === firstPublished}>
+    <summary><span class="program-module-title"><span class="program-module-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>{group.title}</span>
+      <span class="catalog-badge" data-module-lessons={group.lessons.length ? JSON.stringify(group.lessons.map((lesson) => lesson.id)) : undefined}>{group.lessons.length ? labels.lessonCount.replace('{count}', String(group.lessons.length)) : labels.developing}</span>
+    </summary>
+    {group.description && <p class="learning-note">{group.description}</p>}
+    {group.lessons.length ? <ol class="program-lessons">{group.lessons.map((lesson) => <li data-lesson-row data-lesson-id={lesson.id}>
+      <a href={`${base}/${lesson.path}/`}><span>{lesson.title}</span>{lesson.durationMinutes != null && <small>{formatDuration(lesson.durationMinutes, locale)}</small>}</a>
+      <span class="lesson-state" data-lesson-status>{labels.notStarted}</span>
+    </li>)}</ol> : <p class="learning-note">{labels.noLessonsShort}</p>}
+  </details>)}
+</section>
+<script>import '../scripts/progress';</script>

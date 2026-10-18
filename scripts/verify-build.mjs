@@ -61,6 +61,12 @@ for (const locale of locales) {
     if (entry.props.course && !entry.props.module) {
       assert.ok(page.includes('class="course-metadata"'), `${locale}/${entry.path}: missing difficulty/duration`);
       assert.ok(page.includes('data-course-progress'), `${locale}/${entry.path}: missing progress state`);
+      assert.ok(page.includes('data-course-outline'), `${locale}/${entry.path}: missing grouped learning program`);
+      assert.ok(page.includes('data-progress-transfer'), `${locale}/${entry.path}: missing progress transfer controls`);
+      const course = courseById.get(entry.props.course)?.course;
+      for (const field of ['audience', 'prerequisites', 'outcomes']) {
+        for (const point of course?.[field]?.[locale] ?? []) assert.ok(page.includes(point.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')), `${locale}/${entry.path}: missing ${field} content`);
+      }
     }
     const breadcrumb = /<nav\b[^>]*class="catalog-breadcrumbs"[^>]*>([\s\S]*?)<\/nav>/.exec(page)?.[1];
     assert.ok(breadcrumb, `${locale}/${entry.path}: missing breadcrumbs`);
@@ -103,6 +109,7 @@ for (const file of htmlFiles) {
   }
   if (lessonPage && !expectedPaths.includes(path.slice(lessonPage[1].length + 1).replace(/\/$/, ''))) {
     assert.ok(html.includes('class="lesson-learning"'), `${path}: missing lesson controls`);
+    assert.ok(html.includes('data-complete-and-go'), `${path}: missing complete-and-continue action`);
     if (html.includes('class="expressive-code')) {
       const copyLabel = lessonPage[1] === 'en' ? 'Copy to clipboard' : 'Копировать';
       assert.ok(html.includes(`title="${copyLabel}"`), `${path}: code block controls use the wrong language`);

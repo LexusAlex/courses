@@ -21,15 +21,19 @@ jobs:
       SITE_BASE: ${{ matrix.base }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version-file: .node-version
       - uses: pnpm/action-setup@v6
       - run: pnpm install --frozen-lockfile
       - name: Check Makefile recipes without starting servers or containers
-        run: make --dry-run install dev scaffold build preview serve check test verify validate docker-config docker-build docker-up docker-down docker-logs docker-dev docker-dev-down
+        run: make --dry-run install dev scaffold build preview serve check test verify validate lesson e2e smoke docker-config docker-build docker-up docker-down docker-logs docker-dev docker-dev-down
       - run: pnpm check
       - run: pnpm test
+      - name: Install browser for UI checks
+        run: pnpm exec playwright install --with-deps --only-shell chromium
       - name: Verify lesson navigation with temporary content
         shell: bash
         run: |
@@ -38,8 +42,16 @@ jobs:
           trap 'node scripts/learning-fixtures.mjs remove' EXIT
           pnpm build
           pnpm verify
+          pnpm test:e2e
       - run: pnpm build
       - run: pnpm verify
+      - name: Save browser diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-checks-${{ strategy.job-index }}
+          path: output/playwright-*
+          if-no-files-found: ignore
       - run: docker compose config --quiet
       - run: docker compose -f compose.dev.yaml config --quiet
 

@@ -29,6 +29,8 @@ export default defineConfig({
       },
       sidebar: sidebar(),
       pagination: false,
+      lastUpdated: true,
+      editLink: { baseUrl: 'https://github.com/LexusAlex/courses/edit/main/' },
       expressiveCode: {
         themes: ['github-dark', 'github-light'],
         useStarlightUiThemeColors: false,

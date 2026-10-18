@@ -4,6 +4,7 @@ import type { Lesson } from '../lib/lessons.mjs';
 import { learningUi } from '../data/learning-ui.mjs';
 import { formatDuration } from '../lib/course-filters.mjs';
 import CourseProgress from './CourseProgress.astro';
+import SubjectIcon from './SubjectIcon.astro';
 
 interface Props { course: Course; category: Category; lessons: Lesson[]; filter: string; }
 const { course, category, lessons, filter } = Astro.props;
@@ -15,6 +16,7 @@ const outline = `${base}/${locale}/courses/${course.id}/`;
 
 <article class="featured-course" data-featured-course data-course-card data-filter={filter}>
   <div class="featured-course-content">
+    <div class="course-cover" aria-hidden="true"><SubjectIcon name={category.icon} /><span>{course.title[locale]}</span><span class="course-cover-lines"><i></i><i></i><i></i></span></div>
     <div class="catalog-card-top">
       <span class="catalog-kicker">{category.title[locale]}</span>
       <span class="catalog-badge">{lessons.length ? labels.available : labels.preparing}</span>

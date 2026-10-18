@@ -1,15 +1,15 @@
 ---
 import { learningUi } from '../data/learning-ui.mjs';
 import type { Lesson } from '../lib/lessons.mjs';
-interface Props { courseId: string; lessons: Lesson[]; compact?: boolean; featured?: boolean; currentLessonId?: string; }
-const { courseId, lessons, compact = false, featured = false, currentLessonId } = Astro.props;
+interface Props { courseId: string; lessons: Lesson[]; compact?: boolean; featured?: boolean; currentLessonId?: string; nextLesson?: Lesson; }
+const { courseId, lessons, compact = false, featured = false, currentLessonId, nextLesson } = Astro.props;
 const locale = Astro.locals.starlightRoute.locale === 'en' ? 'en' : 'ru';
 const labels = learningUi[locale];
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const manifest = lessons.map(({ id, path }) => ({ id, path }));
 ---
 <div class:list={['course-progress', { compact, featured }]} data-course-progress data-course-id={courseId}
-  data-lessons={JSON.stringify(manifest)} data-locale={locale} data-base={base} data-current-lesson={currentLessonId}>
+  data-lessons={JSON.stringify(manifest)} data-locale={locale} data-base={base} data-current-lesson={currentLessonId} data-has-next={Boolean(nextLesson)}>
   {lessons.length > 0 ? <>
     <p data-progress-count aria-live="polite">{labels.progressText.replace('{done}', '0').replace('{total}', String(lessons.length)).replace('{percent}', '0')}</p>
     <progress aria-label={labels.progress} value="0" max={lessons.length} />
@@ -17,6 +17,7 @@ const manifest = lessons.map(({ id, path }) => ({ id, path }));
       <div class="learning-actions">
         {!currentLessonId && <a class:list={['learning-button', { primary: featured }]} data-progress-resume href={`${base}/${lessons[0].path}/`}>{labels.start}</a>}
         {currentLessonId && <label class="lesson-completion" data-lesson-control hidden><input type="checkbox" data-lesson-toggle disabled /> {labels.complete}</label>}
+        {currentLessonId && <a class="learning-button primary" data-complete-and-go hidden href={nextLesson ? `${base}/${nextLesson.path}/` : `${base}/${locale}/courses/${courseId}/`}>{nextLesson ? labels.completeNext : labels.completeFinish}</a>}
       </div>
       <p class="learning-note">{featured ? labels.localProgress : labels.storageNote}</p>
       <p class="learning-storage-error" data-storage-error role="status" hidden>{labels.storageError}</p>
